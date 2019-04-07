@@ -5,3 +5,6 @@ authors = ["JordanLevin <jlevin38@binghamton.edu>"]
 edition = "2018"
 
 [dependencies]
+sdl2 = "0.31.0"
+gl = "0.10.0"
+rand = "0.6.5"
