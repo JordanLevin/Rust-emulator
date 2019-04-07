@@ -30,36 +30,68 @@ fn disassemble(path: String) -> std::io::Result<()>{
         i+=2;
     }
 
+    let mut addr = 0;
     for opcode in opcodes {
+        print!("{1:00$X}: ", 4, addr);
+        addr += 2;
         match opcode[0] {
             0x0 => match opcode[1] {
                 0x0 => match opcode[2] {
                     0xE => match opcode[3] {
                         0x0 => println!("DISPLAY CLEAR"),
                         0xE => println!("RETURN"),
-                        _ => {
-                            print!("{:x}", opcode[0]);
-                            print!("{:x}", opcode[1]);
-                            print!("{:x}", opcode[2]);
-                            println!("{:x}", opcode[3]);
-                        },
+                        _ => println!("INVALID OPCODE"),
                     },
-                    _ => {
-                        print!("{:x}", opcode[0]);
-                        print!("{:x}", opcode[1]);
-                        print!("{:x}", opcode[2]);
-                        println!("{:x}", opcode[3]);
-                    },
+                    _ => println!("INVALID OPCODE"),
                 },
                 _ => println!("CALL {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
             },
-            0x1 => println!("GOTO"),
-            0x2 => println!("CALL AT ADDR"),
-            0x3 => println!("IF EQ"),
-            0x4 => println!("IF NOT EQ"),
-            0x5 => println!("IF NOT EQ VAR"),
-            0x6 => println!("SET VAR"),
-            0x7 => println!("PLUS EQUALS"),
+            0x1 => println!("GOTO {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            0x2 => println!("CALL AT ADDR {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            0x3 => println!("IF V{:x} == {:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            0x4 => println!("IF V{:x} != {:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            0x5 => println!("IF V{:x} != V{:x}", opcode[1], opcode[2]),
+            0x6 => println!("V{:x} = {:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            0x7 => println!("V{:x} += {:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            0x8 => match opcode[3] {
+                    0x0 => println!("V{:x} = V{:x}", opcode[1], opcode[2]),
+                    0x1 => println!("V{:x} = V{:x}|V{:x}", opcode[1], opcode[1], opcode[2]),
+                    0x2 => println!("V{:x} = V{:x}&V{:x}", opcode[1], opcode[1], opcode[2]),
+                    0x3 => println!("V{:x} = V{:x}^V{:x}", opcode[1], opcode[1], opcode[2]),
+                    0x4 => println!("V{:x} += V{:x}", opcode[1], opcode[2]),
+                    0x5 => println!("V{:x} -= V{:x}", opcode[1], opcode[2]),
+                    0x6 => println!("V{:x}>>=1", opcode[1]),
+                    0x7 => println!("V{:x} = V{:x}-V{:x}", opcode[1], opcode[2], opcode[1]),
+                    0xe => println!("V{:x}<<=1", opcode[1]),
+                    _ => println!("INVALID OPCODE"),
+                    },
+            0x9 => println!("IF V{:x} == V{:x}", opcode[1], opcode[2]),
+            0xA => println!("I = {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            0xB => println!("PC = V0 + {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            0xC => println!("V{:x} = rand()&{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            0xD => println!("draw(V{:x},V{:x},{:x})", opcode[1], opcode[2], opcode[3]),
+            0xE => match opcode[2]{
+                0x9 => println!("IF key() == V{:x}", opcode[1]),
+                0xA => println!("IF key() != V{:x}", opcode[1]),
+                _ => println!("INVALID OPCODE"),
+            },
+            0xF => match opcode[2]{
+                0x0 => match opcode[3]{
+                    0x7 => println!("V{:x} = get_delay()", opcode[1]),
+                    0xA => println!("V{:x} = get_key()", opcode[1]),
+                    _ => println!("INVALID OPCODE"),
+                },
+                0x1 => match opcode[3]{
+                    0x5 => println!("delay_timer(V{:x})", opcode[1]),
+                    0x8 => println!("sound_timer(V{:x})", opcode[1]),
+                    0xE => println!("I += V{:x}", opcode[1]),
+                    _ => println!("INVALID OPCODE"),
+                },
+                0x2 => println!("set_BCD(V{:x})", opcode[1]),
+                0x5 => println!("reg_dump(V{:x}, &I)", opcode[1]),
+                0x6 => println!("reg_load(V{:x}, &I)", opcode[1]),
+                _ => println!("INVALID OPCODE"),
+            },
             _ => {
                 print!("{:x}", opcode[0]);
                 print!("{:x}", opcode[1]);
@@ -68,7 +100,6 @@ fn disassemble(path: String) -> std::io::Result<()>{
             },
         }
     }
-
 
     //Return ok so the compiler doesnt complain about the result
     Ok(())
