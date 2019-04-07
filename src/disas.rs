@@ -4,7 +4,15 @@ use std::io;
 use std::fmt;
 
 fn main() {
-    disassemble(String::from("../roms/15PUZZLE"));
+    disassemble(String::from("../roms/PONG"));
+}
+
+fn debug_print(opcode : &Vec<u8>, src: i32){
+    print!("INVALID OPCODE AT {}: ", src);
+    print!("{:x}", opcode[0]);
+    print!("{:x}", opcode[1]);
+    print!("{:x}", opcode[2]);
+    println!("{:x}", opcode[3]);
 }
 
 fn disassemble(path: String) -> std::io::Result<()>{
@@ -22,10 +30,6 @@ fn disassemble(path: String) -> std::io::Result<()>{
         opcode[1] = (buffer[i] << 4) >> 4;
         opcode[2] = buffer[i+1] >> 4;
         opcode[3] = (buffer[i+1] << 4) >> 4;
-        //print!("{:x}", opcode[0]);
-        //print!("{:x}", opcode[1]);
-        //print!("{:x}", opcode[2]);
-        //println!("{:x}", opcode[3]);
         opcodes.push(opcode);
         i+=2;
     }
@@ -40,9 +44,11 @@ fn disassemble(path: String) -> std::io::Result<()>{
                     0xE => match opcode[3] {
                         0x0 => println!("DISPLAY CLEAR"),
                         0xE => println!("RETURN"),
-                        _ => println!("INVALID OPCODE"),
+                        //_ => debug_print(&opcode, 1),
+                        _ => println!("CALL {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
                     },
-                    _ => println!("INVALID OPCODE"),
+                    //_ => debug_print(&opcode, 2),
+                    _ => println!("CALL {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
                 },
                 _ => println!("CALL {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
             },
@@ -63,7 +69,7 @@ fn disassemble(path: String) -> std::io::Result<()>{
                     0x6 => println!("V{:x}>>=1", opcode[1]),
                     0x7 => println!("V{:x} = V{:x}-V{:x}", opcode[1], opcode[2], opcode[1]),
                     0xe => println!("V{:x}<<=1", opcode[1]),
-                    _ => println!("INVALID OPCODE"),
+                    _ => debug_print(&opcode, 3),
                     },
             0x9 => println!("IF V{:x} == V{:x}", opcode[1], opcode[2]),
             0xA => println!("I = {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
@@ -73,31 +79,27 @@ fn disassemble(path: String) -> std::io::Result<()>{
             0xE => match opcode[2]{
                 0x9 => println!("IF key() == V{:x}", opcode[1]),
                 0xA => println!("IF key() != V{:x}", opcode[1]),
-                _ => println!("INVALID OPCODE"),
+                _ => debug_print(&opcode, 4),
             },
             0xF => match opcode[2]{
                 0x0 => match opcode[3]{
                     0x7 => println!("V{:x} = get_delay()", opcode[1]),
                     0xA => println!("V{:x} = get_key()", opcode[1]),
-                    _ => println!("INVALID OPCODE"),
+                    _ => debug_print(&opcode, 5),
                 },
                 0x1 => match opcode[3]{
                     0x5 => println!("delay_timer(V{:x})", opcode[1]),
                     0x8 => println!("sound_timer(V{:x})", opcode[1]),
                     0xE => println!("I += V{:x}", opcode[1]),
-                    _ => println!("INVALID OPCODE"),
+                    _ => debug_print(&opcode, 6),
                 },
-                0x2 => println!("set_BCD(V{:x})", opcode[1]),
+                0x2 => println!("I=spride_addr[V{:x}]", opcode[1]),
+                0x3 => println!("set_BCD(V{:x})", opcode[1]),
                 0x5 => println!("reg_dump(V{:x}, &I)", opcode[1]),
                 0x6 => println!("reg_load(V{:x}, &I)", opcode[1]),
-                _ => println!("INVALID OPCODE"),
+                _ => debug_print(&opcode, 7),
             },
-            _ => {
-                print!("{:x}", opcode[0]);
-                print!("{:x}", opcode[1]);
-                print!("{:x}", opcode[2]);
-                println!("{:x}", opcode[3]);
-            },
+            _ => debug_print(&opcode, 8),
         }
     }
 

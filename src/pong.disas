@@ -1,0 +1,123 @@
+0000: Va = 02
+0002: Vb = 0c
+0004: Vc = 3f
+0006: Vd = 0c
+0008: I = 2ea
+000A: draw(Va,Vb,6)
+000C: draw(Vc,Vd,6)
+000E: Ve = 00
+0010: CALL AT ADDR 2d4
+0012: V6 = 03
+0014: V8 = 02
+0016: V0 = 60
+0018: delay_timer(V0)
+001A: V0 = get_delay()
+001C: IF V0 == 00
+001E: GOTO 21a
+0020: V7 = rand()&17
+0022: V7 += 08
+0024: V9 = ff
+0026: I = 2f0
+0028: draw(V6,V7,1)
+002A: I = 2ea
+002C: draw(Va,Vb,6)
+002E: draw(Vc,Vd,6)
+0030: V0 = 01
+0032: IF key() != V0
+0034: Vb += fe
+0036: V0 = 04
+0038: IF key() != V0
+003A: Vb += 02
+003C: V0 = 1f
+003E: Vb = Vb&V0
+0040: draw(Va,Vb,6)
+0042: V0 = 0c
+0044: IF key() != V0
+0046: Vd += fe
+0048: V0 = 0d
+004A: IF key() != V0
+004C: Vd += 02
+004E: V0 = 1f
+0050: Vd = Vd&V0
+0052: draw(Vc,Vd,6)
+0054: I = 2f0
+0056: draw(V6,V7,1)
+0058: V6 += V8
+005A: V7 += V9
+005C: V0 = 3f
+005E: V6 = V6&V0
+0060: V1 = 1f
+0062: V7 = V7&V1
+0064: IF V6 != 02
+0066: GOTO 278
+0068: IF V6 != 3f
+006A: GOTO 282
+006C: IF V7 != 1f
+006E: V9 = ff
+0070: IF V7 != 00
+0072: V9 = 01
+0074: draw(V6,V7,1)
+0076: GOTO 22a
+0078: V8 = 02
+007A: V3 = 01
+007C: V0 = V7
+007E: V0 -= Vb
+0080: GOTO 28a
+0082: V8 = fe
+0084: V3 = 0a
+0086: V0 = V7
+0088: V0 -= Vd
+008A: IF Vf == 01
+008C: GOTO 2a2
+008E: V1 = 02
+0090: V0 -= V1
+0092: IF Vf == 01
+0094: GOTO 2ba
+0096: V0 -= V1
+0098: IF Vf == 01
+009A: GOTO 2c8
+009C: V0 -= V1
+009E: IF Vf == 01
+00A0: GOTO 2c2
+00A2: V0 = 20
+00A4: sound_timer(V0)
+00A6: CALL AT ADDR 2d4
+00A8: Ve += V3
+00AA: CALL AT ADDR 2d4
+00AC: V6 = 3e
+00AE: IF V3 == 01
+00B0: V6 = 03
+00B2: V8 = fe
+00B4: IF V3 == 01
+00B6: V8 = 02
+00B8: GOTO 216
+00BA: V9 += ff
+00BC: IF V9 != fe
+00BE: V9 = ff
+00C0: GOTO 2c8
+00C2: V9 += 01
+00C4: IF V9 != 02
+00C6: V9 = 01
+00C8: V0 = 04
+00CA: sound_timer(V0)
+00CC: V6 += 01
+00CE: IF V6 != 40
+00D0: V6 += fe
+00D2: GOTO 26c
+00D4: I = 2f2
+00D6: set_BCD(Ve)
+00D8: reg_load(V2, &I)
+00DA: I=spride_addr[V1]
+00DC: V4 = 14
+00DE: V5 = 00
+00E0: draw(V4,V5,5)
+00E2: V4 += 15
+00E4: I=spride_addr[V2]
+00E6: draw(V4,V5,5)
+00E8: RETURN
+00EA: V0 = V8
+00EC: V0 = V8
+00EE: V0 = V8
+00F0: V0 = V0
+00F2: CALL 000
+00F4: CALL 000
