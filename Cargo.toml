@@ -1,0 +1,7 @@
+[package]
+name = "emulator"
+version = "0.1.0"
+authors = ["JordanLevin <jlevin38@binghamton.edu>"]
+edition = "2018"
+
+[dependencies]
