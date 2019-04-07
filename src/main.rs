@@ -111,12 +111,13 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
 
     loop {
         let opcode = transform_opcode(PC as usize, &MEMORY);
-        print!("{1:00$X}: ", 4, PC);
+        //print!("{1:00$X}: ", 4, PC);
         match opcode[0] {
             0x0 => match opcode[1] {
                 0x0 => match opcode[2] {
                     0xE => match opcode[3] {
                         0x0 => {
+                            println!("CLEAR SCREEN");
                             for row in 0..32{
                                 for col in 0..64{
                                     SCREEN[row][col] = false;
@@ -208,13 +209,13 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
                 for i in 0..opcode[3] as usize{
                     let mut row = MEMORY[addr];
                     for _ in 0..8{
-                        if y >= SCREEN.len() || x >= SCREEN[0].len(){
-                            println!("{0} {1}", x, y);
+                        if y >= SCREEN[0].len() || x >= SCREEN.len(){
+                            //println!("{0} {1}", x, y);
                             continue;
                         }
-                        let prev = SCREEN[y][x];
-                        SCREEN[y][x] = ((row & 1) != 0);
-                        if SCREEN[y][x] != prev{
+                        let prev = SCREEN[x][y];
+                        SCREEN[x][y] ^= ((row & 1) != 0);
+                        if SCREEN[x][y] != prev{
                             REGS[0xF] = 1;
                         }
                         row >>= 1;
@@ -263,7 +264,7 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
         PC = PC+2;
 
 
-        println!("");
+        //println!("");
     }
 
     //Return ok so the compiler doesnt complain about the result
