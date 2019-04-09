@@ -1,6 +1,8 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::{thread, time};
+use std::process::Command;
+//use std::thread;
 
 //Random vals
 extern crate rand;
@@ -9,7 +11,8 @@ extern crate rand;
 extern crate sdl2; 
 
 mod graphics;
-mod instruct;
+mod debuggui;
+use debuggui::instruct;
 
 fn main() {
     let (mut canvas, context) = graphics::init();
@@ -36,7 +39,9 @@ fn transform_opcode(pc: usize, mem: &[u8; 4096]) -> Vec<u8> {
 fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_context: &sdl2::Sdl)
     -> std::io::Result<()>{
     let mut cpu = instruct::CPU::new();
-    //let mut DEBUG: u16 = 0;
+    //Old debugging function, new plan is to spawn another process
+    let output = Command::new("./debug").expect("Failed to execute command");
+    //thread::spawn(|| debuggui::run(&cpu));
 
     let mut input = File::open(path)?;
     let mut buffer = Vec::new();

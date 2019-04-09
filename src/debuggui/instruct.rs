@@ -154,19 +154,13 @@ pub fn draw(cpu: &mut CPU, opcode: &Vec<u8>){
     let mut rowi = cpu.REGS[opcode[2] as usize] as usize;
     let mut addr = cpu.ADDR as usize;
     let mut erased = false;
-    println!("row: {:x} col: {:x}", rowi, coli);
+    //println!("row: {:x} col: {:x}", rowi, coli);
     for _ in 0..opcode[3] as usize{
         let mut row = cpu.MEMORY[addr];
         for _ in 0..8{
-            if rowi < 0 {
-                rowi = 32 + rowi;
-            }
-            if coli < 0 {
-                coli = 64 + coli;
-            }
             let prev = cpu.SCREEN[rowi%32][coli%64];
-            cpu.SCREEN[rowi%32][coli%64] ^= (row & 1) != 0;
-            println!("SET row: {:x} col: {:x}", rowi%32, coli%64);
+            cpu.SCREEN[rowi%32][coli%64] ^= (row & (1 << 7)) != 0;
+            //println!("SET row: {:x} col: {:x}", rowi%32, coli%64);
             if cpu.SCREEN[rowi%32][coli%64] != prev && prev == true{
                 cpu.REGS[0xF] = 1;
                 erased = true;
