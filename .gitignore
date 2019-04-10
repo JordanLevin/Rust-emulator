@@ -1,2 +1,4 @@
 /target
+/src/debug/target
 **/*.rs.bk
+src/debug/target/
