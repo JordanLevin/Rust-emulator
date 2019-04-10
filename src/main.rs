@@ -1,8 +1,8 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::{thread, time};
-use std::process::Command;
-//use std::thread;
+use std::process::{Command, Stdio};
+use std::io::Write;
 
 //Random vals
 extern crate rand;
@@ -11,12 +11,11 @@ extern crate rand;
 extern crate sdl2; 
 
 mod graphics;
-mod debuggui;
-use debuggui::instruct;
+mod instruct;
 
 fn main() {
     let (mut canvas, context) = graphics::init();
-    disassemble(String::from("../roms/PONG"), &mut canvas, &context);
+    disassemble(String::from("../roms/PONG2"), &mut canvas, &context);
 }
 
 fn debug_print(opcode : &Vec<u8>, src: i32){
@@ -40,8 +39,12 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
     -> std::io::Result<()>{
     let mut cpu = instruct::CPU::new();
     //Old debugging function, new plan is to spawn another process
-    let output = Command::new("./debug").expect("Failed to execute command");
+    //LEAVING DEBUG ALONE FOR NOW, MAYBE WORK ON IT LATER
     //thread::spawn(|| debuggui::run(&cpu));
+    //let mut debug = Command::new("debug/target/debug/debug").stdin(Stdio::piped())
+        //.spawn().expect("Failed to execute command");
+    //let mut stdin = debug.stdin.as_mut().expect("Failed to open stdin");
+
 
     let mut input = File::open(path)?;
     let mut buffer = Vec::new();
@@ -132,6 +135,10 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
             cpu.DELAY_TIMER = 0;
         }
         cpu.PC = cpu.PC+2;
+
+        //Try write to debugger
+        //stdin.write(cpu.PC.as_bytes()).expect("Failed to write to stdin");
+        //stdin.flush();
         //println!("");
     }
 }

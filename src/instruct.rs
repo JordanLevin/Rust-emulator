@@ -30,7 +30,6 @@ impl CPU {
 
 //OPCODE: 00E0
 pub fn clear_screen(cpu: &mut CPU, opcode: &Vec<u8>){
-    println!("CLEAR SCREEN");
     for row in 0..32{
         for col in 0..64{
             cpu.SCREEN[row][col] = false;
@@ -210,7 +209,9 @@ pub fn i_sprite(cpu: &mut CPU, opcode: &Vec<u8>){
 }
 //OPCODE: 
 pub fn set_bcd(cpu: &mut CPU, opcode: &Vec<u8>){
-    //print!("set_BCD(V{:x})", opcode[1]);
+    cpu.MEMORY[cpu.ADDR] = (opcode[1]-opcode[1]%100)/100;
+    cpu.MEMORY[cpu.ADDR+1] = opcode[1]/10%10;
+    cpu.MEMORY[cpu.ADDR+2] = opcode[1]%10;
 }
 //OPCODE: 
 pub fn reg_dump(cpu: &mut CPU, opcode: &Vec<u8>){

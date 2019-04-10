@@ -8,6 +8,5 @@ edition = "2018"
 sdl2 = "0.31.0"
 gl = "0.10.0"
 rand = "0.6.5"
-gtk = "0.6.0"
 #servo-fontconfig = "0.4.0"
 #azul = { git = "https://github.com/maps4print/azul" }
