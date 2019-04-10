@@ -23,7 +23,7 @@ pub fn init() -> (sdl2::render::WindowCanvas, sdl2::Sdl){
 }
 
 pub fn draw(canvas: &mut sdl2::render::WindowCanvas, sdl_context: &sdl2::Sdl,
-       SCREEN: &[[bool; 64]; 32]){
+       SCREEN: &[[bool; 64]; 32], KEYS: &mut [bool;16]){
     let mut event_pump = sdl_context.event_pump().unwrap();
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
@@ -32,6 +32,12 @@ pub fn draw(canvas: &mut sdl2::render::WindowCanvas, sdl_context: &sdl2::Sdl,
             Event::Quit {..} |
             Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                 std::process::exit(0);
+            },
+            Event::KeyDown { keycode: Some(key), .. } => {
+                KEYS[(key as usize)%16] = true;
+            },
+            Event::KeyUp { keycode: Some(key), .. } => {
+                KEYS[(key as usize)%16] = false;
             },
             _ => {}
         }

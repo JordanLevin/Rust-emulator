@@ -15,7 +15,7 @@ mod instruct;
 
 fn main() {
     let (mut canvas, context) = graphics::init();
-    disassemble(String::from("../roms/PONG2"), &mut canvas, &context);
+    disassemble(String::from("../roms/15PUZZLE"), &mut canvas, &context);
 }
 
 fn debug_print(opcode : &Vec<u8>, src: i32){
@@ -38,13 +38,14 @@ fn transform_opcode(pc: usize, mem: &[u8; 4096]) -> Vec<u8> {
 fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_context: &sdl2::Sdl)
     -> std::io::Result<()>{
     let mut cpu = instruct::CPU::new();
+    cpu.init();
+
     //Old debugging function, new plan is to spawn another process
     //LEAVING DEBUG ALONE FOR NOW, MAYBE WORK ON IT LATER
     //thread::spawn(|| debuggui::run(&cpu));
     //let mut debug = Command::new("debug/target/debug/debug").stdin(Stdio::piped())
         //.spawn().expect("Failed to execute command");
     //let mut stdin = debug.stdin.as_mut().expect("Failed to open stdin");
-
 
     let mut input = File::open(path)?;
     let mut buffer = Vec::new();
@@ -63,6 +64,7 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
     loop {
         let opcode = transform_opcode(cpu.PC as usize, &cpu.MEMORY);
         //print!("{1:00$X}: ", 4, PC);
+        //println!("{:?}", cpu.KEYS);
         match opcode[0] {
             0x0 => match opcode[1] {
                 0x0 => match opcode[2] {
@@ -107,7 +109,7 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
             0xF => match opcode[2]{
                 0x0 => match opcode[3]{
                     0x7 => instruct::get_delay(&mut cpu, &opcode),
-                    0xA => instruct::get_key(&mut cpu, &opcode),
+                    0xA => instruct::get_key(&mut cpu, &opcode, sdl_context),
                     _ => debug_print(&opcode, 5),
                 },
                 0x1 => match opcode[3]{
@@ -125,13 +127,13 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
             _ => debug_print(&opcode, 8),
         }
 
-        let frametime = time::Duration::from_millis(16);
-        thread::sleep(frametime);
+        //let frametime = time::Duration::from_millis(16);
+        //thread::sleep(frametime);
 
         cpu.DELAY_TIMER = cpu.DELAY_TIMER+1;
         //REFRESH, this may need to be in the loop
-        graphics::draw(canvas, sdl_context, &cpu.SCREEN);
         if cpu.DELAY_TIMER >= 60{
+            graphics::draw(canvas, sdl_context, &cpu.SCREEN, &mut cpu.KEYS);
             cpu.DELAY_TIMER = 0;
         }
         cpu.PC = cpu.PC+2;
