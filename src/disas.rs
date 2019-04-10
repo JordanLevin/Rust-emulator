@@ -1,0 +1,65 @@
+pub fn opcode_to_str(opcode: &Vec<u8>) -> String{
+    match opcode[0] {
+        0x0 => match opcode[1] {
+            0x0 => match opcode[2] {
+                0xE => match opcode[3] {
+                    0x0 => format!("DISPLAY CLEAR"),
+                    0xE => format!("RETURN"),
+                    //_ => debug_print(&opcode, 1),
+                    _ => format!("CALL {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+                },
+                //_ => debug_print(&opcode, 2),
+                _ => format!("CALL {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+            },
+            _ => format!("CALL {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        },
+        0x1 => format!("GOTO {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        0x2 => format!("CALL AT ADDR {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        0x3 => format!("IF V{:x} == {:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        0x4 => format!("IF V{:x} != {:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        0x5 => format!("IF V{:x} != V{:x}", opcode[1], opcode[2]),
+        0x6 => format!("V{:x} = {:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        0x7 => format!("V{:x} += {:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        0x8 => match opcode[3] {
+            0x0 => format!("V{:x} = V{:x}", opcode[1], opcode[2]),
+            0x1 => format!("V{:x} = V{:x}|V{:x}", opcode[1], opcode[1], opcode[2]),
+            0x2 => format!("V{:x} = V{:x}&V{:x}", opcode[1], opcode[1], opcode[2]),
+            0x3 => format!("V{:x} = V{:x}^V{:x}", opcode[1], opcode[1], opcode[2]),
+            0x4 => format!("V{:x} += V{:x}", opcode[1], opcode[2]),
+            0x5 => format!("V{:x} -= V{:x}", opcode[1], opcode[2]),
+            0x6 => format!("V{:x}>>=1", opcode[1]),
+            0x7 => format!("V{:x} = V{:x}-V{:x}", opcode[1], opcode[2], opcode[1]),
+            0xe => format!("V{:x}<<=1", opcode[1]),
+            _ => String::from("Error"),
+        },
+        0x9 => format!("IF V{:x} == V{:x}", opcode[1], opcode[2]),
+        0xA => format!("I = {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        0xB => format!("PC = V0 + {:x}{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        0xC => format!("V{:x} = rand()&{:x}{:x}", opcode[1], opcode[2], opcode[3]),
+        0xD => format!("draw(V{:x},V{:x},{:x})", opcode[1], opcode[2], opcode[3]),
+        0xE => match opcode[2]{
+            0x9 => format!("IF key() == V{:x}", opcode[1]),
+            0xA => format!("IF key() != V{:x}", opcode[1]),
+            _ => String::from("Error"),
+        },
+        0xF => match opcode[2]{
+            0x0 => match opcode[3]{
+                0x7 => format!("V{:x} = get_delay()", opcode[1]),
+                0xA => format!("V{:x} = get_key()", opcode[1]),
+                _ => String::from("Error"),
+            },
+            0x1 => match opcode[3]{
+                0x5 => format!("delay_timer(V{:x})", opcode[1]),
+                0x8 => format!("sound_timer(V{:x})", opcode[1]),
+                0xE => format!("I += V{:x}", opcode[1]),
+                _ => String::from("Error"),
+            },
+            0x2 => format!("I=spride_addr[V{:x}]", opcode[1]),
+            0x3 => format!("set_BCD(V{:x})", opcode[1]),
+            0x5 => format!("reg_dump(V{:x}, &I)", opcode[1]),
+            0x6 => format!("reg_load(V{:x}, &I)", opcode[1]),
+            _ => String::from("Error"),
+        },
+        _ => String::from("Error"),
+    }
+}

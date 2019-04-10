@@ -56,7 +56,7 @@ impl CPU {
         self.MEMORY[33]=0x90;self.MEMORY[34]=0xF0;
         //7 Character
         self.MEMORY[35]=0xF0;self.MEMORY[36]=0x10;self.MEMORY[37]=0x20;
-        self.MEMORY[36]=0x40;self.MEMORY[39]=0x40;
+        self.MEMORY[38]=0x40;self.MEMORY[39]=0x40;
         //8 Character
         self.MEMORY[40]=0xF0;self.MEMORY[41]=0x90;self.MEMORY[42]=0xF0;
         self.MEMORY[43]=0x90;self.MEMORY[44]=0xF0;
@@ -114,45 +114,45 @@ pub fn func(cpu: &mut CPU, opcode: &Vec<u8>){
 }
 //OPCODE: 3XNN
 //NOTE:
-pub fn if_eq_i(cpu: &mut CPU, opcode: &Vec<u8>){
+pub fn skip_eq_i(cpu: &mut CPU, opcode: &Vec<u8>){
     if cpu.REGS[opcode[1] as usize] == ((opcode[2] << 4) | opcode[3]){
         cpu.PC = cpu.PC + 2;
     }
 }
 //OPCODE: 4XNN
-pub fn if_neq_i(cpu: &mut CPU, opcode: &Vec<u8>){
+pub fn skip_neq_i(cpu: &mut CPU, opcode: &Vec<u8>){
     if cpu.REGS[opcode[1] as usize] != ((opcode[2] << 4) | opcode[3]){
         cpu.PC = cpu.PC + 2;
     }
 }
-//OPCODE: 
-pub fn if_neq(cpu: &mut CPU, opcode: &Vec<u8>){
-    if cpu.REGS[opcode[1] as usize] != cpu.REGS[opcode[2] as usize]{
+//OPCODE: 5XY0
+pub fn skip_eq(cpu: &mut CPU, opcode: &Vec<u8>){
+    if cpu.REGS[opcode[1] as usize] == cpu.REGS[opcode[2] as usize]{
         cpu.PC = cpu.PC + 2;
     }
 }
 //OPCODE: 6XNN
 pub fn assign_i(cpu: &mut CPU, opcode: &Vec<u8>){
-    cpu.REGS[opcode[1] as usize] = (opcode[2] << 4) | opcode[3];
+    cpu.REGS[opcode[1] as usize] = ((opcode[2] << 4) | opcode[3]);
 }
 //OPCODE: 7XNN
 pub fn plus_eq_i(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.REGS[opcode[1] as usize] =
-        cpu.REGS[opcode[1] as usize] + (opcode[2] << 4) | opcode[3];
+        cpu.REGS[opcode[1] as usize] + ((opcode[2] << 4) | opcode[3]);
 }
-//OPCODE: 
+//OPCODE: 8XY0
 pub fn assign(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.REGS[opcode[1] as usize] = cpu.REGS[opcode[2] as usize];
 }
-//OPCODE: 
+//OPCODE: 8XY1
 pub fn bit_or(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.REGS[opcode[1] as usize] |= cpu.REGS[opcode[2] as usize];
 }
-//OPCODE: 
+//OPCODE: 8XY2
 pub fn bit_and(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.REGS[opcode[1] as usize] &= cpu.REGS[opcode[2] as usize];
 }
-//OPCODE: 
+//OPCODE: 8XY3
 pub fn bit_xor(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.REGS[opcode[1] as usize] ^= cpu.REGS[opcode[2] as usize];
 }
@@ -182,9 +182,9 @@ pub fn shift_l(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.REGS[0xF] = cpu.REGS[opcode[1] as usize] & (1 >> 7);
     cpu.REGS[opcode[1] as usize] <<= 1;
 }
-//OPCODE: 
-pub fn if_eq(cpu: &mut CPU, opcode: &Vec<u8>){
-    if cpu.REGS[opcode[1] as usize] == cpu.REGS[opcode[2] as usize]{
+//OPCODE: 9XY0
+pub fn skip_neq(cpu: &mut CPU, opcode: &Vec<u8>){
+    if cpu.REGS[opcode[1] as usize] != cpu.REGS[opcode[2] as usize]{
         cpu.PC = cpu.PC + 2;
     }
 }
@@ -202,10 +202,11 @@ pub fn jump_plus(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.PC = cpu.PC + cpu.REGS[0] as u16;
     cpu.PC = cpu.PC - 2; //Account for adding 2 to PC at end of loop
 }
-//OPCODE: 
+//OPCODE: CXNN
 pub fn rand(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.REGS[opcode[1] as usize] = 
-        rand::random::<u8>()&((opcode[1] << 4) | opcode[2]);
+        rand::random::<u8>()&((opcode[2] << 4) | opcode[3]);
+    //println!("RAND: {}", cpu.REGS[opcode[1] as usize]);
 }
 //OPCODE:
 pub fn draw(cpu: &mut CPU, opcode: &Vec<u8>){
@@ -225,7 +226,7 @@ pub fn draw(cpu: &mut CPU, opcode: &Vec<u8>){
                 cpu.REGS[0xF] = 1;
                 erased = true;
             }
-            row >>= 1;
+            row <<= 1;
             coli = coli+1;
         }
         rowi = rowi+1;
@@ -237,14 +238,14 @@ pub fn draw(cpu: &mut CPU, opcode: &Vec<u8>){
     }
 }
 //OPCODE: EX9E
-pub fn if_key_eq(cpu: &mut CPU, opcode: &Vec<u8>){
-    if cpu.KEYS[(opcode[1]%16) as usize] == true {
+pub fn skip_key_eq(cpu: &mut CPU, opcode: &Vec<u8>){
+    if cpu.KEYS[cpu.REGS[(opcode[1]) as usize] as usize] == true {
         cpu.PC = cpu.PC + 2;
     }
 }
-//OPCODE: 
-pub fn if_key_neq(cpu: &mut CPU, opcode: &Vec<u8>){
-    if cpu.KEYS[(opcode[1]%16) as usize] == false {
+//OPCODE: EX9E
+pub fn skip_key_neq(cpu: &mut CPU, opcode: &Vec<u8>){
+    if cpu.KEYS[cpu.REGS[(opcode[1]) as usize] as usize] == false {
         cpu.PC = cpu.PC + 2;
     }
 }
@@ -253,33 +254,52 @@ pub fn get_delay(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.REGS[opcode[1] as usize] = cpu.DELAY_TIMER;
 }
 //OPCODE: FX0A
+//NOTE: likely needs fixing
 pub fn get_key(cpu: &mut CPU, opcode: &Vec<u8>, sdl_context: &sdl2::Sdl){
     let mut event_pump = sdl_context.event_pump().unwrap();
+    //println!("TESTTTTTTTT");
     for event in event_pump.poll_iter() {
+        let mut keypress = true;
         match event {
-            Event::KeyDown { keycode: Some(key), .. } => {
-                cpu.REGS[opcode[1] as usize] = key as u8;
-            },
-            _ => {}
+            Event::KeyDown {keycode:Some(Num1),..}=> cpu.REGS[opcode[1] as usize] = 0,
+            Event::KeyDown {keycode:Some(Num2),..}=> cpu.REGS[opcode[1] as usize] = 1,
+            Event::KeyDown {keycode:Some(Num3),..}=> cpu.REGS[opcode[1] as usize] = 2,
+            Event::KeyDown {keycode:Some(Num4),..}=> cpu.REGS[opcode[1] as usize] = 3,
+            Event::KeyDown {keycode:Some(Q),..}=> cpu.REGS[opcode[1] as usize] = 4,
+            Event::KeyDown {keycode:Some(W),..}=> cpu.REGS[opcode[1] as usize] = 5,
+            Event::KeyDown {keycode:Some(E),..}=> cpu.REGS[opcode[1] as usize] = 6,
+            Event::KeyDown {keycode:Some(R),..}=> cpu.REGS[opcode[1] as usize] = 7,
+            Event::KeyDown {keycode:Some(A),..}=> cpu.REGS[opcode[1] as usize] = 8,
+            Event::KeyDown {keycode:Some(S),..}=> cpu.REGS[opcode[1] as usize] = 9,
+            Event::KeyDown {keycode:Some(D),..}=> cpu.REGS[opcode[1] as usize] = 10,
+            Event::KeyDown {keycode:Some(F),..}=> cpu.REGS[opcode[1] as usize] = 11,
+            Event::KeyDown {keycode:Some(Z),..}=> cpu.REGS[opcode[1] as usize] = 12,
+            Event::KeyDown {keycode:Some(X),..}=> cpu.REGS[opcode[1] as usize] = 13,
+            Event::KeyDown {keycode:Some(C),..}=> cpu.REGS[opcode[1] as usize] = 14,
+            Event::KeyDown {keycode:Some(V),..}=> cpu.REGS[opcode[1] as usize] = 15,
+            _ => {keypress = false; break;},
+        }
+        if keypress == true {
+            break;
         }
     }
     //print!("V{:x} = get_key()", opcode[1]);
 }
-//OPCODE: 
+//OPCODE: FX15
 pub fn delay_assign(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.DELAY_TIMER = cpu.REGS[opcode[1] as usize];
 }
-//OPCODE: 
+//OPCODE: FX18
 pub fn sound_assign(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.SOUND_TIMER = cpu.REGS[opcode[1] as usize];
 }
-//OPCODE: 
+//OPCODE: FX1E
 pub fn i_plus_eq(cpu: &mut CPU, opcode: &Vec<u8>){
     cpu.ADDR = cpu.ADDR + cpu.REGS[opcode[1] as usize] as u16;
 }
-//OPCODE: 
+//OPCODE: FX29
 pub fn i_sprite(cpu: &mut CPU, opcode: &Vec<u8>){
-    match opcode[1]{
+    match cpu.REGS[opcode[1] as usize]{
         0x0 => cpu.ADDR = 0,
         0x1 => cpu.ADDR = 5,
         0x2 => cpu.ADDR = 10,
@@ -299,21 +319,22 @@ pub fn i_sprite(cpu: &mut CPU, opcode: &Vec<u8>){
         _ => println!("Bad sprite"),
     }
 }
-//OPCODE: 
+//OPCODE: FX33
 pub fn set_bcd(cpu: &mut CPU, opcode: &Vec<u8>){
-    cpu.MEMORY[cpu.ADDR as usize] = (opcode[1]-opcode[1]%100)/100;
-    cpu.MEMORY[cpu.ADDR as usize+1] = opcode[1]/10%10;
-    cpu.MEMORY[cpu.ADDR as usize+2] = opcode[1]%10;
+    let val = cpu.REGS[opcode[1] as usize];
+    cpu.MEMORY[cpu.ADDR as usize] = (val-val%100)/100;
+    cpu.MEMORY[cpu.ADDR as usize+1] = val/10%10;
+    cpu.MEMORY[cpu.ADDR as usize+2] = val%10;
 }
-//OPCODE: 
+//OPCODE: FX55
 pub fn reg_dump(cpu: &mut CPU, opcode: &Vec<u8>){
-    for i in 0..opcode[1] as usize{
+    for i in 0..1+opcode[1] as usize{
         cpu.MEMORY[cpu.ADDR as usize +i] = cpu.REGS[i];
     }
 }
-//OPCODE: 
+//OPCODE: FX65
 pub fn reg_load(cpu: &mut CPU, opcode: &Vec<u8>){
-    for i in 0..opcode[1] as usize{
+    for i in 0..1+opcode[1] as usize{
         cpu.REGS[i] = cpu.MEMORY[cpu.ADDR as usize +i];
     }
 }

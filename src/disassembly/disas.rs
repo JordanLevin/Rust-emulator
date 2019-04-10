@@ -2,9 +2,11 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io;
 use std::fmt;
+use std::env;
 
 fn main() {
-    disassemble(String::from("../roms/PONG"));
+    let args: Vec<String> = env::args().collect();
+    disassemble(&args[1]);
 }
 
 fn debug_print(opcode : &Vec<u8>, src: i32){
@@ -15,7 +17,7 @@ fn debug_print(opcode : &Vec<u8>, src: i32){
     println!("{:x}", opcode[3]);
 }
 
-fn disassemble(path: String) -> std::io::Result<()>{
+fn disassemble(path: &String) -> std::io::Result<()>{
     let mut input = File::open(path)?;
     let mut buffer = Vec::new();
     let mut i= 0;

@@ -33,12 +33,38 @@ pub fn draw(canvas: &mut sdl2::render::WindowCanvas, sdl_context: &sdl2::Sdl,
             Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                 std::process::exit(0);
             },
-            Event::KeyDown { keycode: Some(key), .. } => {
-                KEYS[(key as usize)%16] = true;
-            },
-            Event::KeyUp { keycode: Some(key), .. } => {
-                KEYS[(key as usize)%16] = false;
-            },
+            Event::KeyDown {keycode: Some(Keycode::Num1), ..} => KEYS[1] = true,
+            Event::KeyDown {keycode:Some(Keycode::Num2),..}=> KEYS[2] = true,
+            Event::KeyDown {keycode:Some(Keycode::Num3),..}=> KEYS[3] = true,
+            Event::KeyDown {keycode:Some(Keycode::Num4),..}=> KEYS[12] = true,
+            Event::KeyDown {keycode:Some(Keycode::Q),..}=> KEYS[4] = true,
+            Event::KeyDown {keycode:Some(Keycode::W),..}=> KEYS[5] = true,
+            Event::KeyDown {keycode:Some(Keycode::E),..}=> KEYS[6] = true,
+            Event::KeyDown {keycode:Some(Keycode::R),..}=> KEYS[13] = true,
+            Event::KeyDown {keycode:Some(Keycode::A),..}=> KEYS[7] = true,
+            Event::KeyDown {keycode:Some(Keycode::S),..}=> KEYS[8] = true,
+            Event::KeyDown {keycode:Some(Keycode::D),..}=> KEYS[9] = true,
+            Event::KeyDown {keycode:Some(Keycode::F),..}=> KEYS[14] = true,
+            Event::KeyDown {keycode:Some(Keycode::Z),..}=> KEYS[10] = true,
+            Event::KeyDown {keycode:Some(Keycode::X),..}=> KEYS[0] = true,
+            Event::KeyDown {keycode:Some(Keycode::C),..}=> KEYS[11] = true,
+            Event::KeyDown {keycode:Some(Keycode::V),..}=> KEYS[15] = true,
+            Event::KeyUp {keycode: Some(Keycode::Num1), ..} => KEYS[1] = false,
+            Event::KeyUp {keycode:Some(Keycode::Num2),..}=> KEYS[2] = false,
+            Event::KeyUp {keycode:Some(Keycode::Num3),..}=> KEYS[3] = false,
+            Event::KeyUp {keycode:Some(Keycode::Num4),..}=> KEYS[12] = false,
+            Event::KeyUp {keycode:Some(Keycode::Q),..}=> KEYS[4] = false,
+            Event::KeyUp {keycode:Some(Keycode::W),..}=> KEYS[5] = false,
+            Event::KeyUp {keycode:Some(Keycode::E),..}=> KEYS[6] = false,
+            Event::KeyUp {keycode:Some(Keycode::R),..}=> KEYS[13] = false,
+            Event::KeyUp {keycode:Some(Keycode::A),..}=> KEYS[7] = false,
+            Event::KeyUp {keycode:Some(Keycode::S),..}=> KEYS[8] = false,
+            Event::KeyUp {keycode:Some(Keycode::D),..}=> KEYS[9] = false,
+            Event::KeyUp {keycode:Some(Keycode::F),..}=> KEYS[14] = false,
+            Event::KeyUp {keycode:Some(Keycode::Z),..}=> KEYS[10] = false,
+            Event::KeyUp {keycode:Some(Keycode::X),..}=> KEYS[0] = false,
+            Event::KeyUp {keycode:Some(Keycode::C),..}=> KEYS[11] = false,
+            Event::KeyUp {keycode:Some(Keycode::V),..}=> KEYS[15] = false,
             _ => {}
         }
     }

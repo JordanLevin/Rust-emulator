@@ -3,6 +3,7 @@ use std::io::prelude::*;
 use std::{thread, time};
 use std::process::{Command, Stdio};
 use std::io::Write;
+use std::env;
 
 //Random vals
 extern crate rand;
@@ -12,14 +13,16 @@ extern crate sdl2;
 
 mod graphics;
 mod instruct;
+mod disas;
 
 fn main() {
     let (mut canvas, context) = graphics::init();
-    disassemble(String::from("../roms/15PUZZLE"), &mut canvas, &context);
+    let args: Vec<String> = env::args().collect();
+    disassemble(&args[1], &mut canvas, &context);
 }
 
 fn debug_print(opcode : &Vec<u8>, src: i32){
-    print!("INVALID OPCODE AT {}: ", src);
+    //print!("INVALID OPCODE AT {}: ", src);
     print!("{:x}", opcode[0]);
     print!("{:x}", opcode[1]);
     print!("{:x}", opcode[2]);
@@ -35,7 +38,7 @@ fn transform_opcode(pc: usize, mem: &[u8; 4096]) -> Vec<u8> {
     return opcode;
 }
 
-fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_context: &sdl2::Sdl)
+fn disassemble(path: &String, canvas: &mut sdl2::render::WindowCanvas, sdl_context: &sdl2::Sdl)
     -> std::io::Result<()>{
     let mut cpu = instruct::CPU::new();
     cpu.init();
@@ -55,7 +58,7 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
 
     //Setup instructions to memory for running program
     let mut i = 0;
-    while i < buffer.len(){
+    while i < buffer.len()-1{
         cpu.MEMORY[cpu.PC as usize+i] = buffer[i];
         cpu.MEMORY[cpu.PC as usize+i+1] = buffer[i+1];
         i+=2;
@@ -63,7 +66,9 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
 
     loop {
         let opcode = transform_opcode(cpu.PC as usize, &cpu.MEMORY);
-        //print!("{1:00$X}: ", 4, PC);
+        //print!("{1:00$X}: ", 4, cpu.PC);
+        //print!(" V0:{:x} V1:{:x} V2:{:x} I:{:x} ", cpu.REGS[0], cpu.REGS[1], cpu.REGS[2], cpu.ADDR);
+        //println!("{}", disas::opcode_to_str(&opcode));
         //println!("{:?}", cpu.KEYS);
         match opcode[0] {
             0x0 => match opcode[1] {
@@ -79,9 +84,9 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
             },
             0x1 => instruct::goto(&mut cpu, &opcode),
             0x2 => instruct::func(&mut cpu, &opcode),
-            0x3 => instruct::if_eq_i(&mut cpu, &opcode),
-            0x4 => instruct::if_neq_i(&mut cpu, &opcode),
-            0x5 => instruct::if_neq(&mut cpu, &opcode),
+            0x3 => instruct::skip_eq_i(&mut cpu, &opcode),
+            0x4 => instruct::skip_neq_i(&mut cpu, &opcode),
+            0x5 => instruct::skip_eq(&mut cpu, &opcode),
             0x6 => instruct::assign_i(&mut cpu, &opcode),
             0x7 => instruct::plus_eq_i(&mut cpu, &opcode),
             0x8 => match opcode[3] {
@@ -96,14 +101,14 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
                 0xe => instruct::shift_l(&mut cpu, &opcode),
                 _ => debug_print(&opcode, 3),
             },
-            0x9 => instruct::if_eq(&mut cpu, &opcode),
+            0x9 => instruct::skip_neq(&mut cpu, &opcode),
             0xA => instruct::assign_addr(&mut cpu, &opcode),
             0xB => instruct::jump_plus(&mut cpu, &opcode),
             0xC => instruct::rand(&mut cpu, &opcode),
             0xD => instruct::draw(&mut cpu, &opcode),
             0xE => match opcode[2] {
-                0x9 => instruct::if_key_eq(&mut cpu, &opcode),
-                0xA => instruct::if_key_neq(&mut cpu, &opcode),
+                0x9 => instruct::skip_key_eq(&mut cpu, &opcode),
+                0xA => instruct::skip_key_neq(&mut cpu, &opcode),
                 _ => debug_print(&opcode, 4),
             },
             0xF => match opcode[2]{
@@ -127,15 +132,14 @@ fn disassemble(path: String, canvas: &mut sdl2::render::WindowCanvas, sdl_contex
             _ => debug_print(&opcode, 8),
         }
 
-        //let frametime = time::Duration::from_millis(16);
-        //thread::sleep(frametime);
+        let frametime = time::Duration::from_millis(2);
+        thread::sleep(frametime);
 
-        cpu.DELAY_TIMER = cpu.DELAY_TIMER+1;
         //REFRESH, this may need to be in the loop
-        if cpu.DELAY_TIMER >= 60{
-            graphics::draw(canvas, sdl_context, &cpu.SCREEN, &mut cpu.KEYS);
-            cpu.DELAY_TIMER = 0;
+        if cpu.DELAY_TIMER > 0{
+            cpu.DELAY_TIMER = cpu.DELAY_TIMER-1;
         }
+        graphics::draw(canvas, &sdl_context, &cpu.SCREEN, &mut cpu.KEYS);
         cpu.PC = cpu.PC+2;
 
         //Try write to debugger
