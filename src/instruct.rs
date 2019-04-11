@@ -85,7 +85,7 @@ impl CPU {
 }
 
 //OPCODE: 00E0
-pub fn clear_screen(cpu: &mut CPU, opcode: &Vec<u8>){
+pub fn clear_screen(cpu: &mut CPU, _opcode: &Vec<u8>){
     for row in 0..32{
         for col in 0..64{
             cpu.SCREEN[row][col] = false;
@@ -93,7 +93,7 @@ pub fn clear_screen(cpu: &mut CPU, opcode: &Vec<u8>){
     }
 }
 //OPCODE: 00EE
-pub fn ret(cpu: &mut CPU, opcode: &Vec<u8>){
+pub fn ret(cpu: &mut CPU, _opcode: &Vec<u8>){
     cpu.PC = cpu.STACK[cpu.STACK.len()-1];
     cpu.STACK.pop();
 }
@@ -133,7 +133,7 @@ pub fn skip_eq(cpu: &mut CPU, opcode: &Vec<u8>){
 }
 //OPCODE: 6XNN
 pub fn assign_i(cpu: &mut CPU, opcode: &Vec<u8>){
-    cpu.REGS[opcode[1] as usize] = ((opcode[2] << 4) | opcode[3]);
+    cpu.REGS[opcode[1] as usize] = (opcode[2] << 4) | opcode[3];
 }
 //OPCODE: 7XNN
 pub fn plus_eq_i(cpu: &mut CPU, opcode: &Vec<u8>){
@@ -261,22 +261,22 @@ pub fn get_key(cpu: &mut CPU, opcode: &Vec<u8>, sdl_context: &sdl2::Sdl){
     for event in event_pump.poll_iter() {
         let mut keypress = true;
         match event {
-            Event::KeyDown {keycode:Some(Num1),..}=> cpu.REGS[opcode[1] as usize] = 0,
-            Event::KeyDown {keycode:Some(Num2),..}=> cpu.REGS[opcode[1] as usize] = 1,
-            Event::KeyDown {keycode:Some(Num3),..}=> cpu.REGS[opcode[1] as usize] = 2,
-            Event::KeyDown {keycode:Some(Num4),..}=> cpu.REGS[opcode[1] as usize] = 3,
-            Event::KeyDown {keycode:Some(Q),..}=> cpu.REGS[opcode[1] as usize] = 4,
-            Event::KeyDown {keycode:Some(W),..}=> cpu.REGS[opcode[1] as usize] = 5,
-            Event::KeyDown {keycode:Some(E),..}=> cpu.REGS[opcode[1] as usize] = 6,
-            Event::KeyDown {keycode:Some(R),..}=> cpu.REGS[opcode[1] as usize] = 7,
-            Event::KeyDown {keycode:Some(A),..}=> cpu.REGS[opcode[1] as usize] = 8,
-            Event::KeyDown {keycode:Some(S),..}=> cpu.REGS[opcode[1] as usize] = 9,
-            Event::KeyDown {keycode:Some(D),..}=> cpu.REGS[opcode[1] as usize] = 10,
-            Event::KeyDown {keycode:Some(F),..}=> cpu.REGS[opcode[1] as usize] = 11,
-            Event::KeyDown {keycode:Some(Z),..}=> cpu.REGS[opcode[1] as usize] = 12,
-            Event::KeyDown {keycode:Some(X),..}=> cpu.REGS[opcode[1] as usize] = 13,
-            Event::KeyDown {keycode:Some(C),..}=> cpu.REGS[opcode[1] as usize] = 14,
-            Event::KeyDown {keycode:Some(V),..}=> cpu.REGS[opcode[1] as usize] = 15,
+            Event::KeyDown {keycode: Some(Keycode::Num1), ..} => cpu.REGS[opcode[1] as usize] =1,
+            Event::KeyDown {keycode:Some(Keycode::Num2),..}=> cpu.REGS[opcode[1] as usize] =2,
+            Event::KeyDown {keycode:Some(Keycode::Num3),..}=> cpu.REGS[opcode[1] as usize] =3,
+            Event::KeyDown {keycode:Some(Keycode::Num4),..}=> cpu.REGS[opcode[1] as usize] =12,
+            Event::KeyDown {keycode:Some(Keycode::Q),..}=> cpu.REGS[opcode[1] as usize] =4,
+            Event::KeyDown {keycode:Some(Keycode::W),..}=> cpu.REGS[opcode[1] as usize] =5,
+            Event::KeyDown {keycode:Some(Keycode::E),..}=> cpu.REGS[opcode[1] as usize] =6,
+            Event::KeyDown {keycode:Some(Keycode::R),..}=> cpu.REGS[opcode[1] as usize] =13,
+            Event::KeyDown {keycode:Some(Keycode::A),..}=> cpu.REGS[opcode[1] as usize] =7,
+            Event::KeyDown {keycode:Some(Keycode::S),..}=> cpu.REGS[opcode[1] as usize] =8,
+            Event::KeyDown {keycode:Some(Keycode::D),..}=> cpu.REGS[opcode[1] as usize] =9,
+            Event::KeyDown {keycode:Some(Keycode::F),..}=> cpu.REGS[opcode[1] as usize] =14,
+            Event::KeyDown {keycode:Some(Keycode::Z),..}=> cpu.REGS[opcode[1] as usize] =10,
+            Event::KeyDown {keycode:Some(Keycode::X),..}=> cpu.REGS[opcode[1] as usize] =0,
+            Event::KeyDown {keycode:Some(Keycode::C),..}=> cpu.REGS[opcode[1] as usize] =11,
+            Event::KeyDown {keycode:Some(Keycode::V),..}=> cpu.REGS[opcode[1] as usize] =15,
             _ => {keypress = false; break;},
         }
         if keypress == true {

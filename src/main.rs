@@ -1,8 +1,8 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::{thread, time};
-use std::process::{Command, Stdio};
-use std::io::Write;
+//use std::process::{Command, Stdio};
+//use std::io::Write;
 use std::env;
 
 //Random vals
@@ -22,7 +22,7 @@ fn main() {
 }
 
 fn debug_print(opcode : &Vec<u8>, src: i32){
-    //print!("INVALID OPCODE AT {}: ", src);
+    print!("INVALID OPCODE AT {}: ", src);
     print!("{:x}", opcode[0]);
     print!("{:x}", opcode[1]);
     print!("{:x}", opcode[2]);
@@ -41,6 +41,7 @@ fn transform_opcode(pc: usize, mem: &[u8; 4096]) -> Vec<u8> {
 fn disassemble(path: &String, canvas: &mut sdl2::render::WindowCanvas, sdl_context: &sdl2::Sdl)
     -> std::io::Result<()>{
     let mut cpu = instruct::CPU::new();
+    let mut cycle_num: i64 = 0;
     cpu.init();
 
     //Old debugging function, new plan is to spawn another process
@@ -132,15 +133,23 @@ fn disassemble(path: &String, canvas: &mut sdl2::render::WindowCanvas, sdl_conte
             _ => debug_print(&opcode, 8),
         }
 
-        let frametime = time::Duration::from_millis(2);
-        thread::sleep(frametime);
-
-        //REFRESH, this may need to be in the loop
-        if cpu.DELAY_TIMER > 0{
+        //Count down delay and sound timers 60 times per second
+        if cpu.DELAY_TIMER > 0 && cycle_num%16 == 0{
             cpu.DELAY_TIMER = cpu.DELAY_TIMER-1;
         }
-        graphics::draw(canvas, &sdl_context, &cpu.SCREEN, &mut cpu.KEYS);
+        if cpu.SOUND_TIMER > 0 && cycle_num%16 == 0{
+            cpu.SOUND_TIMER = cpu.SOUND_TIMER-1;
+        }
+
         cpu.PC = cpu.PC+2;
+        cycle_num = cycle_num+1;
+
+        //Sleep for 1 ms so it doesnt go too fast, cycle time is not documented so
+        //this will need to be good enough.
+        let frametime = time::Duration::from_millis(1);
+        thread::sleep(frametime);
+        //Redraw the graphics buffer
+        graphics::draw(canvas, &sdl_context, &cpu.SCREEN, &mut cpu.KEYS);
 
         //Try write to debugger
         //stdin.write(cpu.PC.as_bytes()).expect("Failed to write to stdin");

@@ -2,4 +2,5 @@
 /src/debug/target
 **/*.rs.bk
 src/debug/target/
-src/debug/target/
+src/.debug/target/
+.*.sw*
