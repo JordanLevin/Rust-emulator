@@ -4,6 +4,7 @@ use std::{thread, time};
 use std::process::{Command, Stdio};
 use std::io::Write;
 use std::env;
+use std::sync::{Mutex, Arc};
 
 //Random vals
 extern crate rand;
@@ -11,9 +12,10 @@ extern crate rand;
 //Graphics
 extern crate sdl2; 
 
+//mod graphics;
 mod graphics;
-mod instruct;
 mod disas;
+use graphics::instruct;
 
 fn main() {
     let (mut canvas, context) = graphics::init();
@@ -40,8 +42,26 @@ fn transform_opcode(pc: usize, mem: &[u8; 4096]) -> Vec<u8> {
 
 fn disassemble(path: &String, canvas: &mut sdl2::render::WindowCanvas, sdl_context: &sdl2::Sdl)
     -> std::io::Result<()>{
-    let mut cpu = instruct::CPU::new();
-    cpu.init();
+    let mut cpuorig = instruct::CPU::new();
+    cpuorig.init();
+    let cpumutex = Arc::new(Mutex::new(cpuorig));
+
+
+    let cpumutex2 = Arc::clone(&cpumutex);
+    let handle = thread::spawn(move || {
+        loop{
+            let frametime = time::Duration::from_millis(16);
+            thread::sleep(frametime);
+
+            let mut cpu = cpumutex2.lock().unwrap();
+            //REFRESH, this may need to be in the loop
+            if cpu.DELAY_TIMER > 0{
+                cpu.DELAY_TIMER = cpu.DELAY_TIMER-1;
+            }
+
+        println!("{}", cpu.DELAY_TIMER);
+        }
+    });
 
     //Old debugging function, new plan is to spawn another process
     //LEAVING DEBUG ALONE FOR NOW, MAYBE WORK ON IT LATER
@@ -59,12 +79,15 @@ fn disassemble(path: &String, canvas: &mut sdl2::render::WindowCanvas, sdl_conte
     //Setup instructions to memory for running program
     let mut i = 0;
     while i < buffer.len()-1{
-        cpu.MEMORY[cpu.PC as usize+i] = buffer[i];
-        cpu.MEMORY[cpu.PC as usize+i+1] = buffer[i+1];
+        let mut cpu = cpumutex.lock().unwrap();
+        let next = cpu.PC as usize + i;
+        cpu.MEMORY[next] = buffer[i];
+        cpu.MEMORY[next+1] = buffer[i+1];
         i+=2;
     }
 
     loop {
+        let mut cpu = cpumutex.lock().unwrap();
         let opcode = transform_opcode(cpu.PC as usize, &cpu.MEMORY);
         //print!("{1:00$X}: ", 4, cpu.PC);
         //print!(" V0:{:x} V1:{:x} V2:{:x} I:{:x} ", cpu.REGS[0], cpu.REGS[1], cpu.REGS[2], cpu.ADDR);
@@ -132,15 +155,15 @@ fn disassemble(path: &String, canvas: &mut sdl2::render::WindowCanvas, sdl_conte
             _ => debug_print(&opcode, 8),
         }
 
-        let frametime = time::Duration::from_millis(2);
-        thread::sleep(frametime);
+        //let frametime = time::Duration::from_millis(2);
+        //thread::sleep(frametime);
 
         //REFRESH, this may need to be in the loop
-        if cpu.DELAY_TIMER > 0{
-            cpu.DELAY_TIMER = cpu.DELAY_TIMER-1;
-        }
-        graphics::draw(canvas, &sdl_context, &cpu.SCREEN, &mut cpu.KEYS);
+        //if cpu.DELAY_TIMER > 0{
+            //cpu.DELAY_TIMER = cpu.DELAY_TIMER-1;
+        //}
         cpu.PC = cpu.PC+2;
+        graphics::draw(canvas, &sdl_context, &mut cpu);
 
         //Try write to debugger
         //stdin.write(cpu.PC.as_bytes()).expect("Failed to write to stdin");
